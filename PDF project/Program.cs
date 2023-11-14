@@ -27,17 +27,40 @@ namespace PDF_project
                     PdfReader pdfReader = new PdfReader(pdfStream);
                     PdfDocument pdfDoc = new PdfDocument(pdfReader);
 
+                    /*
                     // excract data from each page
                     for (int page = 1; page <= pdfDoc.GetNumberOfPages(); page++)
                     {
-                        ITextExtractionStrategy strategy = new SimpleTextExtractionStrategy();
+                    }
+                    */
 
-                        string data = PdfTextExtractor.GetTextFromPage(pdfDoc.GetPage(page), strategy);
+                    ITextExtractionStrategy strategy = new SimpleTextExtractionStrategy();
 
-                        Console.WriteLine(data);
+                    // get data form 1. page
+                    string data = PdfTextExtractor.GetTextFromPage(pdfDoc.GetPage(1), strategy);
+
+                    List<string> indexes = new List<string> { "Atļauja Nr:", "Atļauja derīga no:", "līdz"};
+                    List<int> lenghts = new List<int> { 11, 10, 10 };
+
+                    // Find the index of "permit Nr: "
+                    int index = data.IndexOf("Atļauja Nr:");
+
+
+                    if (index != -1)
+                    {
+                        // Get the substring starting from the index after "permit Nr: "
+                        string result = data.Substring(index + "Atļauja Nr:".Length + 1, 11);
+
+                        Console.WriteLine("Atļaujas nr: " + result);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Substring not found in the input string.");
                     }
 
-                    Console.WriteLine("Wow šis actually strādā :D");
+                    Console.WriteLine(data);
+                    
+                    
 
                     // Close everything when done
                     pdfReader.Close();
