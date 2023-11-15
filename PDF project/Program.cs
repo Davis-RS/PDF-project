@@ -45,7 +45,7 @@ namespace PDF_project
                         // Find the index
                         int index = pageText.IndexOf(indexes[i]);
 
-                        if (index != -1)
+                        if (index != -1 && indexes[i] != "Maršruts:" && indexes[i] != "Kustība atļauta:")
                         {
                             // Get the text after index
                             string restOfString = pageText.Substring(index + indexes[i].Length);
@@ -77,6 +77,21 @@ namespace PDF_project
 
                             // Display the result
                             Console.WriteLine("Text after '" + indexes[i] + "': '" + trimmedResult + "'");
+                        }
+
+                        // FIX THIS!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        else if (index != -1 && indexes[i] == "Maršruts:")
+                        {
+                            // Get the substring starting from the end of the keyword
+                            string restOfString = pageText.Substring(index + indexes[i].Length);
+
+                            // Split the substring into lines
+                            string[] lines = restOfString.Split("\n");
+
+                            // Take the next two lines
+                            string nextTwoLines = string.Join("\n", lines.Take(2));
+
+                            Console.WriteLine("Text after 'Maršruts:':\n" + nextTwoLines.Trim());
                         }
                         else
                         {
