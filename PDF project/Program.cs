@@ -80,8 +80,8 @@ namespace PDF_project
                         }
 
                         // FIX THIS!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        else if (index != -1 && indexes[i] == "Maršruts:")
-                        {
+                        /*
+                        else if (index != -1 && indexes[i] == "Maršruts:") {
                             // Get the substring starting from the end of the keyword
                             string restOfString = pageText.Substring(index + indexes[i].Length);
 
@@ -93,6 +93,19 @@ namespace PDF_project
 
                             Console.WriteLine("Text after 'Maršruts:':\n" + nextTwoLines.Trim());
                         }
+                        else if (index != -1 && indexes[i] == "Kustība atļauta:") {
+                            // Get the substring starting from the end of the keyword
+                            string restOfString = pageText.Substring(index + indexes[i].Length);
+
+                            // Split the substring into lines
+                            string[] lines = restOfString.Split('\n');
+
+                            // Take the next line
+                            string nextLine = lines.FirstOrDefault();
+
+                            Console.WriteLine("Text after 'Kustība atļauta:': " + nextLine.Trim());
+                        }
+                        */
                         else
                         {
                             Console.WriteLine("Substring not found in the input string.");
