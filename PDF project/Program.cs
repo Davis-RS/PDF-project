@@ -14,7 +14,8 @@ namespace PDF_project
         static void Main()
         {
             // Replace the URL with the actual PDF file URL
-            string pdfUrl = "https://va.lvceli.lv/Request/request/Application/GetPermissionPdfFile?id=177262";
+            // 177262
+            string pdfUrl = "https://va.lvceli.lv/Request/request/Application/GetPermissionPdfFile?id=177659";
 
             using (HttpClient client = new HttpClient())
             {
@@ -27,41 +28,65 @@ namespace PDF_project
                     PdfReader pdfReader = new PdfReader(pdfStream);
                     PdfDocument pdfDoc = new PdfDocument(pdfReader);
 
-                    /*
-                    // excract data from each page
-                    for (int page = 1; page <= pdfDoc.GetNumberOfPages(); page++)
-                    {
-                    }
-                    */
 
                     ITextExtractionStrategy strategy = new SimpleTextExtractionStrategy();
 
-                    // get data form 1. page
-                    string data = PdfTextExtractor.GetTextFromPage(pdfDoc.GetPage(1), strategy);
-
-                    List<string> indexes = new List<string> { "Atļauja Nr:", "Atļauja derīga no:", "līdz"};
-                    List<int> lenghts = new List<int> { 11, 10, 10 };
-
-                    // Find the index of "permit Nr: "
-                    int index = data.IndexOf("Atļauja Nr:");
+                    // get all pageText form 1. page
+                    string pageText = PdfTextExtractor.GetTextFromPage(pdfDoc.GetPage(1), strategy);
 
 
-                    if (index != -1)
+                    // values for extracting specific text
+                    List<string> indexes = new List<string> { "Atļauja Nr:", "Atļauja derīga no:", "līdz", "Nosaukums:", "Reģ.Nr.::", "Izmaiņas veiktas:", "Maršruts:", "Kustība atļauta:" };
+                    List<string> results = new List<string> { };
+
+                    // extracting specific text
+                    for (int i = 0; i < indexes.Count; i++) 
                     {
-                        // Get the substring starting from the index after "permit Nr: "
-                        string result = data.Substring(index + "Atļauja Nr:".Length + 1, 11);
+                        // Find the index
+                        int index = pageText.IndexOf(indexes[i]);
 
-                        Console.WriteLine("Atļaujas nr: " + result);
+                        if (index != -1)
+                        {
+                            // Get the text after index
+                            string restOfString = pageText.Substring(index + indexes[i].Length);
+
+                            // Find the index of the next newline character
+                            int newlineIndex = restOfString.IndexOf("\n");
+
+                            // Extract the line of text after the keyword and trim "/n"
+                            string result = newlineIndex != -1 ? restOfString.Substring(0, newlineIndex) : restOfString.TrimEnd();
+
+                            // declare for using it outside "if"
+                            string trimmedResult;
+
+                            // check for permitDate since
+                            if (indexes[i] == "Atļauja derīga no:")
+                            {
+                                // get only the first word
+                                string trimmed = result.Trim();
+                                int spaceIndex = trimmed.IndexOf(' ');
+                                string firstWord = spaceIndex != -1 ? trimmed.Substring(0, spaceIndex) : trimmed;
+
+                                trimmedResult = firstWord;
+                            }
+                            else
+                            {
+                                // trim both ends of result
+                                trimmedResult = result.Trim();
+                            }
+
+                            // Display the result
+                            Console.WriteLine("Text after '" + indexes[i] + "': '" + trimmedResult + "'");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Substring not found in the input string.");
+                        }
                     }
-                    else
-                    {
-                        Console.WriteLine("Substring not found in the input string.");
-                    }
 
-                    Console.WriteLine(data);
+                    // write whole page
+                    Console.WriteLine("/n" + pageText);
                     
-                    
-
                     // Close everything when done
                     pdfReader.Close();
                     pdfDoc.Close();
