@@ -47,13 +47,13 @@ namespace PDF_project
 
                         if (index != -1 && indexes[i] != "Maršruts:" && indexes[i] != "Kustība atļauta:")
                         {
-                            // Get the text after index
+                            // get the text after index
                             string restOfString = pageText.Substring(index + indexes[i].Length);
 
-                            // Find the index of the next newline character
+                            // find the index of the next newline character
                             int newlineIndex = restOfString.IndexOf("\n");
 
-                            // Extract the line of text after the keyword and trim "/n"
+                            // extract the line of text after the keyword and trim "/n"
                             string result = newlineIndex != -1 ? restOfString.Substring(0, newlineIndex) : restOfString.TrimEnd();
 
                             // declare for using it outside "if"
@@ -75,7 +75,7 @@ namespace PDF_project
                                 trimmedResult = result.Trim();
                             }
 
-                            // Display the result
+                            // display the result
                             Console.WriteLine("Text after '" + indexes[i] + "': '" + trimmedResult + "'");
 
                             // add result to results list
@@ -85,10 +85,10 @@ namespace PDF_project
                             // get end index
                             int endIndex = pageText.IndexOf("Kustība atļauta:");
 
-                            // Get the substring between the start and end keywords
+                            // get the substring between the start and end keywords
                             string substringBetween = pageText.Substring(index + indexes[i].Length, endIndex - (index + indexes[i].Length));
 
-                            // Get the substring starting from the end of the keyword
+                            // get the substring starting from the end of the keyword
                             string trimmedResult = substringBetween.Trim();
 
                             Console.WriteLine("Text after 'Maršruts:': '" + trimmedResult + "'");
@@ -100,10 +100,10 @@ namespace PDF_project
                             // get end index
                             int endIndex = pageText.IndexOf("Vispārīgie nosacījumi:");
 
-                            // Get the substring between the start and end keywords
+                            // get the substring between the start and end keywords
                             string substringBetween = pageText.Substring(index + indexes[i].Length, endIndex - (index + indexes[i].Length));
 
-                            // Take the next line
+                            // take the next line
                             string trimmedResult = substringBetween.Trim();
 
                             Console.WriteLine("Text after 'Kustība atļauta:': '" + trimmedResult + "'");
@@ -121,7 +121,7 @@ namespace PDF_project
                     // write whole page
                     // Console.WriteLine("/n" + pageText);
                     
-                    // Close everything when done
+                    // close everything when done
                     pdfReader.Close();
                     pdfDoc.Close();
                     pdfStream.Close();
