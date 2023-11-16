@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "iVe5sTKG7Vf24VejBpKW1qJil2mri7b8qMoUX2iGau+Ik88r0VrodLPPNzYDR2GtVDLNmdteHkXWWtEqoF5Psg==",
+  "dgSpecHash": "89xUCaFyzW8+iuJvsXpVIVe4hfGQNcp90OjAk/YDKJDdjXxGdIWv+A77t6OAlB8YWI7VP/QoGieLd6RX2giDAw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\4davi\\source\\repos\\PDF-project\\PDF project\\PDF_project.csproj",
+  "projectFilePath": "C:\\Users\\4davi\\source\\repos\\PDF project\\PDF project\\PDF_project.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\4davi\\.nuget\\packages\\itext\\8.0.2\\itext.8.0.2.nupkg.sha512",
     "C:\\Users\\4davi\\.nuget\\packages\\itext.commons\\8.0.2\\itext.commons.8.0.2.nupkg.sha512",

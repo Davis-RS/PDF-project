@@ -14,8 +14,8 @@ namespace PDF_project
         static void Main()
         {
             // Replace the URL with the actual PDF file URL
-            // 177262
-            string pdfUrl = "https://va.lvceli.lv/Request/request/Application/GetPermissionPdfFile?id=177659";
+            //  177659 177744
+            string pdfUrl = "https://va.lvceli.lv/Request/request/Application/GetPermissionPdfFile?id=177262";
 
             using (HttpClient client = new HttpClient())
             {
@@ -77,43 +77,49 @@ namespace PDF_project
 
                             // Display the result
                             Console.WriteLine("Text after '" + indexes[i] + "': '" + trimmedResult + "'");
+
+                            // add result to results list
+                            results.Add(trimmedResult);
                         }
-
-                        // FIX THIS!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        /*
                         else if (index != -1 && indexes[i] == "Maršruts:") {
+                            // get end index
+                            int endIndex = pageText.IndexOf("Kustība atļauta:");
+
+                            // Get the substring between the start and end keywords
+                            string substringBetween = pageText.Substring(index + indexes[i].Length, endIndex - (index + indexes[i].Length));
+
                             // Get the substring starting from the end of the keyword
-                            string restOfString = pageText.Substring(index + indexes[i].Length);
+                            string trimmedResult = substringBetween.Trim();
 
-                            // Split the substring into lines
-                            string[] lines = restOfString.Split("\n");
+                            Console.WriteLine("Text after 'Maršruts:': '" + trimmedResult + "'");
 
-                            // Take the next two lines
-                            string nextTwoLines = string.Join("\n", lines.Take(2));
-
-                            Console.WriteLine("Text after 'Maršruts:':\n" + nextTwoLines.Trim());
+                            // add result to results list
+                            results.Add(trimmedResult);
                         }
                         else if (index != -1 && indexes[i] == "Kustība atļauta:") {
-                            // Get the substring starting from the end of the keyword
-                            string restOfString = pageText.Substring(index + indexes[i].Length);
+                            // get end index
+                            int endIndex = pageText.IndexOf("Vispārīgie nosacījumi:");
 
-                            // Split the substring into lines
-                            string[] lines = restOfString.Split('\n');
+                            // Get the substring between the start and end keywords
+                            string substringBetween = pageText.Substring(index + indexes[i].Length, endIndex - (index + indexes[i].Length));
 
                             // Take the next line
-                            string nextLine = lines.FirstOrDefault();
+                            string trimmedResult = substringBetween.Trim();
 
-                            Console.WriteLine("Text after 'Kustība atļauta:': " + nextLine.Trim());
+                            Console.WriteLine("Text after 'Kustība atļauta:': '" + trimmedResult + "'");
+                            
+                            // add result to results list
+                            results.Add(trimmedResult);
                         }
-                        */
                         else
                         {
                             Console.WriteLine("Substring not found in the input string.");
                         }
                     }
 
+                    // FOR TESTING
                     // write whole page
-                    Console.WriteLine("/n" + pageText);
+                    // Console.WriteLine("/n" + pageText);
                     
                     // Close everything when done
                     pdfReader.Close();
