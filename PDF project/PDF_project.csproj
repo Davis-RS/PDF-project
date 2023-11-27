@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Google.Apis.Sheets.v4" Version="1.64.0.3148" />
     <PackageReference Include="itext7" Version="8.0.2" />
     <PackageReference Include="PDFsharp" Version="6.0.0" />
   </ItemGroup>

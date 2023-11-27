@@ -6,6 +6,7 @@ using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using System.IO;
 using System.Reflection.Metadata;
+using Google.Apis.Auth.OAuth2;
 
 namespace PDF_project
 {
@@ -13,16 +14,35 @@ namespace PDF_project
     {
         static void Main()
         {
-            // Replace the URL with the actual PDF file URL
-            //  177659 177744
-            string pdfUrl = "https://va.lvceli.lv/Request/request/Application/GetPermissionPdfFile?id=177262";
+            // google api user credentials
+            string googleClientId = "936433672894-6582lb3te5cg9vv5628isvos5qje1gat.apps.googleusercontent.com";
+            string googleClientSecret = "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";
+            string[] scopes = new[] { Google.Apis.Sheets.v4.SheetsService.Scope.Spreadsheets };
 
+            // google sheets id
+            string spreadsheetId = "1a4Zn2y-zzPDsxzBm8yyT5qWcqeyC85yS_x4VYRqyE7U";
+
+            UserCredential credential = GoogleAuthentication.Login(googleClientId, googleClientSecret, scopes);
+            GoogleSheetsManager manager = new GoogleSheetsManager(credential);
+
+            // create new sheet
+            // var newSheet = manager.CreateNew("Test document");
+            // Console.WriteLine(newSheet.SpreadsheetUrl);
+            
+            List<object> results = new List<object> { };
+
+
+            // URL of PDF file 
+            //  177659 177744 177262 178317 178567
+            string pdfUrl = "https://va.lvceli.lv/Request/request/Application/GetPermissionPdfFile?id=178535";
+
+            // download PDF and get specific data from it
             using (HttpClient client = new HttpClient())
             {
-                // Download the PDF file as a byte array
+                // download the PDF file as a byte array
                 byte[] pdfBytes = client.GetByteArrayAsync(pdfUrl).Result;
 
-                // Open the PDF from the byte array using PdfSharp
+                // open the PDF from the byte array using PdfSharp
                 using (MemoryStream pdfStream = new MemoryStream(pdfBytes))
                 {
                     PdfReader pdfReader = new PdfReader(pdfStream);
@@ -36,24 +56,24 @@ namespace PDF_project
 
 
                     // values for extracting specific text
-                    List<string> indexes = new List<string> { "Atļauja Nr:", "Atļauja derīga no:", "līdz", "Nosaukums:", "Reģ.Nr.::", "Izmaiņas veiktas:", "Maršruts:", "Kustība atļauta:" };
-                    List<string> results = new List<string> { };
+                    List<string> indexes = new List<string> { "Atļauja Nr:", "Atļauja derīga no:", "līdz", "Nosaukums:", "Reģ.Nr.::", "Izmaiņas veiktas:", "Kustība atļauta:", "Maršruts:", "Garums:", "Platums:", "Augstums no brauktuves:", "Transportlīdzekļa faktiskā masa (ar kravu) līdz:", "Asu skaits:", "Slodze uz asi(t):", "Attālums starp asīm:" };
+
 
                     // extracting specific text
-                    for (int i = 0; i < indexes.Count; i++) 
+                    for (int i = 0; i < indexes.Count; i++)
                     {
                         // Find the index
                         int index = pageText.IndexOf(indexes[i]);
 
-                        if (index != -1 && indexes[i] != "Maršruts:" && indexes[i] != "Kustība atļauta:")
+                        if (index != -1 && indexes[i] != "Maršruts:" && indexes[i] != "Kustība atļauta:" && indexes[i] != "Attālums starp asīm:")
                         {
-                            // Get the text after index
+                            // get the text after index
                             string restOfString = pageText.Substring(index + indexes[i].Length);
 
-                            // Find the index of the next newline character
+                            // find the index of the next newline character
                             int newlineIndex = restOfString.IndexOf("\n");
 
-                            // Extract the line of text after the keyword and trim "/n"
+                            // extract the line of text after the keyword and trim "/n"
                             string result = newlineIndex != -1 ? restOfString.Substring(0, newlineIndex) : restOfString.TrimEnd();
 
                             // declare for using it outside "if"
@@ -75,58 +95,90 @@ namespace PDF_project
                                 trimmedResult = result.Trim();
                             }
 
-                            // Display the result
+                            // display the result
                             Console.WriteLine("Text after '" + indexes[i] + "': '" + trimmedResult + "'");
 
                             // add result to results list
                             results.Add(trimmedResult);
                         }
-                        else if (index != -1 && indexes[i] == "Maršruts:") {
+                        else if (index != -1 && indexes[i] == "Maršruts:")
+                        {
                             // get end index
                             int endIndex = pageText.IndexOf("Kustība atļauta:");
 
-                            // Get the substring between the start and end keywords
+                            // get the substring between the start and end keywords
                             string substringBetween = pageText.Substring(index + indexes[i].Length, endIndex - (index + indexes[i].Length));
 
-                            // Get the substring starting from the end of the keyword
+                            // get the substring starting from the end of the keyword
                             string trimmedResult = substringBetween.Trim();
 
+                            // display the result
                             Console.WriteLine("Text after 'Maršruts:': '" + trimmedResult + "'");
 
                             // add result to results list
                             results.Add(trimmedResult);
                         }
-                        else if (index != -1 && indexes[i] == "Kustība atļauta:") {
+                        else if (index != -1 && indexes[i] == "Kustība atļauta:")
+                        {
                             // get end index
                             int endIndex = pageText.IndexOf("Vispārīgie nosacījumi:");
 
-                            // Get the substring between the start and end keywords
+                            // get the substring between the start and end keywords
                             string substringBetween = pageText.Substring(index + indexes[i].Length, endIndex - (index + indexes[i].Length));
 
-                            // Take the next line
+                            // take the next line
                             string trimmedResult = substringBetween.Trim();
 
+                            // display the result
                             Console.WriteLine("Text after 'Kustība atļauta:': '" + trimmedResult + "'");
-                            
+
+                            // add result to results list
+                            results.Add(trimmedResult);
+                        }
+                        else if (index != -1 && indexes[i] == "Attālums starp asīm:")
+                        {
+                            // get end index
+                            int endIndex = pageText.IndexOf("Maršruts:");
+
+                            // get the substring between the start and end keywords
+                            string substringBetween = pageText.Substring(index + indexes[i].Length, endIndex - (index + indexes[i].Length));
+
+                            // get the substring starting from the end of the keyword
+                            string trimmedResult = substringBetween.Trim();
+
+                            // get rid of every anomaly in result
+                            trimmedResult = trimmedResult.Replace("\n", "");
+                            trimmedResult = trimmedResult.Replace("⎿", "");
+                            trimmedResult = trimmedResult.Replace("⊥", "");
+                            trimmedResult = trimmedResult.Replace("⏌", "");
+                            trimmedResult = trimmedResult.Trim();
+
+                            // display the result
+                            Console.WriteLine("Text after 'Attālums starp asīm:': '" + trimmedResult + "'");
+
                             // add result to results list
                             results.Add(trimmedResult);
                         }
                         else
                         {
-                            Console.WriteLine("Substring not found in the input string.");
+                            Console.WriteLine("Substring '" + indexes[i] + "' not found in the input string.");
+                            results.Add("-");
                         }
                     }
 
-                    // FOR TESTING
                     // write whole page
-                    // Console.WriteLine("/n" + pageText);
-                    
+                    // Console.WriteLine(pageText);
+
                     // Close everything when done
                     pdfReader.Close();
                     pdfDoc.Close();
                     pdfStream.Close();
                 }
             }
+            // Console.Read();
+
+            // append data to sheet
+            manager.CreateEntry("Test document", spreadsheetId, results);
         }
     }
 }
