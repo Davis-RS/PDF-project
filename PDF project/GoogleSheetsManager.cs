@@ -56,7 +56,7 @@ namespace PDF_project
         {
             using (var sheetsService = new SheetsService(new BaseClientService.Initializer() { HttpClientInitializer = _credential }))
             {
-                // specify the range of cells!!!
+                // specify the range of cells
                 var range = $"{sheetName}!A:H";
                 var valueRange = new ValueRange();
 
