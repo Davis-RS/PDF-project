@@ -18,7 +18,7 @@ namespace PDF_project
         // variable
         private List<object> results = new List<object>();
 
-        // properties
+        // property
         public List<object> Results
         {
             get { return results; }

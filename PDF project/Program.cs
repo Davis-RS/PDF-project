@@ -12,7 +12,10 @@ namespace PDF_project
 {
     class Program
     {
-        static void Main()
+        // CookieManager instance
+        static CookieManager cookieManager = new CookieManager();
+
+        static async Task Main()
         {
             // google api user credentials
             string googleClientId = "936433672894-6582lb3te5cg9vv5628isvos5qje1gat.apps.googleusercontent.com";
@@ -29,13 +32,14 @@ namespace PDF_project
             string pdfUrl = $"https://va.lvceli.lv/Request/request/Application/GetPermissionPdfFile?id={pdfid}";
 
 
-            // GoogleManager instances
+            // GoogleManager instance
             UserCredential credential = GoogleAuthentication.Login(googleClientId, googleClientSecret, scopes);
             GoogleSheetsManager sheetsManager = new GoogleSheetsManager(credential);
 
             // PdfManager instance
             PdfManager pdfManager = new PdfManager();
-
+            
+            string cookieValue;
 
             // create new sheet
             // var newSheet = sheetsManager.CreateNew("Test document");
@@ -46,17 +50,60 @@ namespace PDF_project
             //var watch = new System.Diagnostics.Stopwatch();
             //watch.Start();
 
+            //---------------------------------------------------------------------------------------------------------------------------------------
 
+            for (var i = 0; i < 10; i++)
+            {
+                if (cookieManager.verifyCookie())
+                {
+                    Console.WriteLine("Cookie is not valid!");
+                    cookieValue = await getCookieValueAsync("https://va.lvceli.lv/Request/Permission/index", ".AspNetCore.Antiforgery.Bh1b6bYpeVU");
+                }
+                else
+                {
+                    Console.WriteLine("Cookie is valid!");
+                }
+                Thread.Sleep(1000);
+            }
+
+            // downloading pdf and getting results
             pdfManager.getResults(pdfUrl);
-
-            Console.WriteLine(pdfManager.Results);
 
 
             // Console.Read();
             //Console.WriteLine($"Execution Time: {watch.ElapsedMilliseconds} ms");
 
             // append data to sheet
-            sheetsManager.CreateEntry("Test document", spreadsheetId, pdfManager.Results);
+            //sheetsManager.CreateEntry("Test document", spreadsheetId, pdfManager.Results);
+        }
+
+
+        static async Task<string> getCookieValueAsync(string url, string cookieName)
+        {
+
+            using (HttpClient client = new HttpClient())
+            {
+                HttpResponseMessage response = await client.GetAsync(url);
+
+                if (response.IsSuccessStatusCode)
+                {
+
+                    // call function that returns cookie value
+                    string cookieValue = cookieManager.getCookieValueFromResponse(response, cookieName);
+                    Console.WriteLine("getCookieValueFromResponse is called.");
+
+                    Console.WriteLine($"Timeframe: {cookieManager.TimeFrame}");
+                    Console.WriteLine($"Cookie value: {cookieValue}");
+
+
+                    return cookieValue;
+                }
+                else
+                {
+                    return "Error while getting HttpResponse in getCookieValueAsync";
+                }
+            }
+
         }
     }
 }
