@@ -57,7 +57,7 @@ namespace PDF_project
                 if (cookieManager.verifyCookie())
                 {
                     Console.WriteLine("Cookie is not valid!");
-                    cookieValue = await getCookieValueAsync("https://va.lvceli.lv/Request/Permission/index", ".AspNetCore.Antiforgery.Bh1b6bYpeVU");
+                    cookieValue = await getCookieValueAsync("https://va.lvceli.lv/Request/request", ".AspNetCore.Antiforgery.Bh1b6bYpeVU");
                 }
                 else
                 {
