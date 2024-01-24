@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -38,6 +39,7 @@ namespace PDF_project
             {
                 foreach (var setCookieHeader in setCookieHeaders)
                 {
+                    // get only first part of header value
                     var cookies = setCookieHeader.Split(';')
                         .Select(cookie => cookie.Trim())
                         .Select(cookie => cookie.Split('='))
@@ -57,6 +59,33 @@ namespace PDF_project
             }
 
             return cookieValue;
+        }
+
+        public string getTokenValueFromResponse(HttpResponseMessage response, string headerName)
+        {
+            if (response == null)
+            {
+                throw new ArgumentNullException(nameof(response));
+            }
+
+            if (string.IsNullOrEmpty(headerName))
+            {
+                throw new ArgumentException("Cookie name cannot be null or empty.", nameof(headerName));
+            }
+
+            string headerValue = "";
+
+            if (response.Headers.TryGetValues("Requestverificationtoken", out var values))
+            {
+                // get the value
+                headerValue = values.First();
+            }
+            else
+            {
+                Console.WriteLine("Header value not found!");
+            }
+
+            return headerValue;
         }
 
 
