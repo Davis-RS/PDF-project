@@ -101,7 +101,7 @@ namespace PDF_project
             string url = "https://va.lvceli.lv/Request/request";
 
             // JSON payload
-            string jsonPayload = "{\r\n  \"page\": 1,\r\n  \"pagesize\": 10,\r\n  \"NationalRegistrationNumber\": \"\",\r\n  \"ApplicationTypeDDL\": {\r\n    \"SelectedId\": \"\"\r\n  },\r\n  \"From\": \"\",\r\n  \"To\": \"\",\r\n  \"OrderField\": {}\r\n}";
+            string jsonPayload = "{\r\n  \"page\": 1,\r\n  \"pagesize\": 200,\r\n  \"NationalRegistrationNumber\": \"\",\r\n  \"ApplicationTypeDDL\": {\r\n    \"SelectedId\": \"\"\r\n  },\r\n  \"From\": \"\",\r\n  \"To\": \"\",\r\n  \"OrderField\": {}\r\n}";
 
 
             // Create a request message with method, URL, and content
