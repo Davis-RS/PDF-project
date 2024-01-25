@@ -25,7 +25,8 @@ namespace PDF_project
             set { results = value; }
         }
 
-        
+
+        // download and read pdf to get list of results
         public List<object> getResults(string pdfUrl)
         {
             // download PDF and get specific data from it

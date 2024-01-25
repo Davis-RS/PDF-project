@@ -9,6 +9,8 @@ using System.Reflection.Metadata;
 using Google.Apis.Auth.OAuth2;
 using System.Text;
 using HtmlAgilityPack;
+using testing;
+using System.Text.Json;
 
 namespace PDF_project
 {
@@ -17,6 +19,7 @@ namespace PDF_project
         // CookieManager instance
         static CookieManager cookieManager = new CookieManager();
 
+        // HttpClient instance for using all in one
         static HttpClient client = new HttpClient();
 
         static async Task Main()
@@ -24,6 +27,8 @@ namespace PDF_project
             // google api user credentials
             string googleClientId = "936433672894-6582lb3te5cg9vv5628isvos5qje1gat.apps.googleusercontent.com";
             string googleClientSecret = "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";
+            
+            // new Google Sheets service
             string[] scopes = new[] { Google.Apis.Sheets.v4.SheetsService.Scope.Spreadsheets };
 
             // google sheets id
@@ -43,9 +48,14 @@ namespace PDF_project
             // PdfManager instance
             PdfManager pdfManager = new PdfManager();
 
+            // JsonManager instance
+            JsonManager jsonManager = new JsonManager();
+
+            // site values
             string requestUrl = "https://va.lvceli.lv/Request/request";
             string cookieValue = "";
             string verificationTokenValue = "";
+            string jsonResponse = "";
 
             // create new sheet
             // var newSheet = sheetsManager.CreateNew("Test document");
@@ -75,12 +85,19 @@ namespace PDF_project
 
             try
             {
-                string jsonResponse = await SendPostRequest(cookieValue, verificationTokenValue);
+                jsonResponse = await SendPostRequest(cookieValue, verificationTokenValue);
                 Console.WriteLine(jsonResponse);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"An error occurred: {ex.Message}");
+            }
+
+            List<string> ids = jsonManager.getResults(jsonResponse);
+
+            foreach (string id in ids)
+            {
+                Console.WriteLine($"{id}");
             }
 
             // downloading pdf and getting results
@@ -101,13 +118,16 @@ namespace PDF_project
             string url = "https://va.lvceli.lv/Request/request";
 
             // JSON payload
-            string jsonPayload = "{\r\n  \"page\": 1,\r\n  \"pagesize\": 200,\r\n  \"NationalRegistrationNumber\": \"\",\r\n  \"ApplicationTypeDDL\": {\r\n    \"SelectedId\": \"\"\r\n  },\r\n  \"From\": \"\",\r\n  \"To\": \"\",\r\n  \"OrderField\": {}\r\n}";
+            var postData = new PostData()
+            {
+                page = 1,
+                pagesize = 10,
+            };
 
-
-            // Create a request message with method, URL, and content
+            // create a request message with method, URL, and content
             using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, url))
             {
-                // Add headers, including the custom cookie
+                // add headers, including the custom cookie
                 request.Headers.Add("authority", "va.lvceli.lv");
                 request.Headers.Add("method", "POST");
                 request.Headers.Add("path", "/Request/request");
@@ -131,16 +151,19 @@ namespace PDF_project
                 request.Headers.Add("X-Requested-With", "XMLHttpRequest");
 
 
-                // Add JSON payload to the request content
+                // convert to json
+                var jsonPayload = JsonSerializer.Serialize(postData);
+
+                // add JSON payload to the request content
                 request.Content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-                // Send the request and get the response
+                // send the request and get the response
                 using (HttpResponseMessage response = await client.SendAsync(request))
                 {
-                    // Ensure a successful response
+                    // ensure a successful response
                     response.EnsureSuccessStatusCode();
 
-                    // Read the response content as a string (assuming it's JSON)
+                    // read the response content as a string
                     return await response.Content.ReadAsStringAsync();
                 }
             }
@@ -172,26 +195,27 @@ namespace PDF_project
 
         static async Task<string> getVerificationTokenValueAsync(string url)
         {
-            // Send a GET request to the specified URL
+            // send a GET request to the specified URL
             HttpResponseMessage response = await client.GetAsync(url);
 
-            // Ensure a successful response
+            // ensure a successful response
             response.EnsureSuccessStatusCode();
 
-            // Read the response content as a string
+            // read the response content as a string
             string htmlContent = await response.Content.ReadAsStringAsync();
 
-            // Use HtmlAgilityPack to parse the HTML
+            // use HtmlAgilityPack to parse the HTML
             HtmlDocument htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(htmlContent);
 
-            // Find the RequestVerificationToken in the HTML
+            // find the RequestVerificationToken in the HTML
             HtmlNode tokenNode = htmlDocument.DocumentNode.SelectSingleNode("//input[@name='__RequestVerificationToken']");
 
+            // get and print token
             var value = tokenNode?.Attributes["value"]?.Value;
             await Console.Out.WriteLineAsync($"Verification token value: {value}");
 
-            // Return the value of the RequestVerificationToken if found
+            // return the value of the RequestVerificationToken if found
             return value;
         }
     }
