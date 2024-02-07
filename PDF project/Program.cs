@@ -11,6 +11,8 @@ using System.Text;
 using HtmlAgilityPack;
 using testing;
 using System.Text.Json;
+using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
+using iText.Kernel.Pdf.Action;
 
 namespace PDF_project
 {
@@ -28,17 +30,48 @@ namespace PDF_project
             string googleClientId = "936433672894-6582lb3te5cg9vv5628isvos5qje1gat.apps.googleusercontent.com";
             string googleClientSecret = "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";
             
+            // google sheets id
+            string sheetId = "";
+                   
+            // spreadsheet name as current date and time
+            // get the current date and time
+            DateTime currentDateTime = DateTime.Now;
+
+            // format the date and time as a string
+            string sheetName = currentDateTime.ToString("yyyy.MM.dd HH-mm");
+
+            // site values
+            string requestUrl = "https://va.lvceli.lv/Request/request";
+            string cookieValue = "";
+            string verificationTokenValue = "";
+            string jsonResponse = "";
+
+            // JSON values
+            int itemCount = 0;
+
+
+            var sheetHeaders = new List<object>()
+            {
+                "Atļaujas Nr.",
+                "Atļauja derīga no:",
+                "Atļauja derīga līdz:",
+                "Pārvadātāja nosaukums:",
+                "Pārvadātāja reģ.nr.:",
+                "Izmaiņas veiktas:",
+                "Kustība atļauta:",
+                "Maršruts:",
+                "Transportlīdzekļa garums:",
+                "Transportlīdzekļa platums:",
+                "Transportlīdzekļa augstums no brauktuves:",
+                "Transportlīdzekļa kopējā faktiskā masa:",
+                "Asu skaits:",
+                "Slodze uz asi(t):",
+                "Attālums starp asīm:"
+            };
+
+
             // new Google Sheets service
             string[] scopes = new[] { Google.Apis.Sheets.v4.SheetsService.Scope.Spreadsheets };
-
-            // google sheets id
-            string spreadsheetId = "1a4Zn2y-zzPDsxzBm8yyT5qWcqeyC85yS_x4VYRqyE7U";
-
-
-            // URL of PDF file 
-            //  177659 177744 177262 178317 178567    
-            string pdfid = "179366";
-            string pdfUrl = $"https://va.lvceli.lv/Request/request/Application/GetPermissionPdfFile?id={pdfid}";
 
 
             // GoogleManager instance
@@ -51,21 +84,24 @@ namespace PDF_project
             // JsonManager instance
             JsonManager jsonManager = new JsonManager();
 
-            // site values
-            string requestUrl = "https://va.lvceli.lv/Request/request";
-            string cookieValue = "";
-            string verificationTokenValue = "";
-            string jsonResponse = "";
 
-            // create new sheet
-            // var newSheet = sheetsManager.CreateNew("Test document");
-            //Console.WriteLine(newSheet.SpreadsheetUrl);
+            // create new sheet and get all sheet info
+            /*
+            var newSheet = sheetsManager.CreateNew(sheetName);
+            
+            string sheetUrl = newSheet.SpreadsheetUrl;
+            Console.WriteLine($"New sheet name: {sheetName} sheet url: {sheetUrl}");
 
+            // get sheet id
+            string newId = sheetsManager.getId(sheetUrl);
+            sheetId = newId;
+            Console.Out.WriteLine($"Sheet id: {sheetId}");
+                        
+            // fill sheet with headers
+            sheetsManager.CreateEntry(sheetName, sheetId, sheetHeaders);
+            */
 
-            // stopwatch to see how much ms to execute pdf processing
-            //var watch = new System.Diagnostics.Stopwatch();
-            //watch.Start();
-
+           
             //---------------------------------------------------------------------------------------------------------------------------------------
 
             for (var i = 0; i < 1; i++)
@@ -85,34 +121,54 @@ namespace PDF_project
 
             try
             {
-                jsonResponse = await SendPostRequest(cookieValue, verificationTokenValue);
-                Console.WriteLine(jsonResponse);
+                jsonResponse = await SendPostRequest(cookieValue, 1, verificationTokenValue);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"An error occurred: {ex.Message}");
             }
 
-            List<string> ids = jsonManager.getResults(jsonResponse);
-
-            foreach (string id in ids)
+            // get max count of PDF files
+            if (itemCount == 0)
             {
-                Console.WriteLine($"{id}");
+                itemCount = jsonManager.getMaxCount(jsonResponse);
             }
 
-            // downloading pdf and getting results
-            //pdfManager.getResults(pdfUrl);
+            // number of loops to complete 
+            float loops = itemCount / 200;
 
+            // Math.Ceiling(loops)
+            for (int i = 0; i < 1; i++)
+            {
+                // send POST request
+                jsonResponse = await SendPostRequest(cookieValue, i+1, verificationTokenValue);
+                Console.WriteLine(jsonResponse);
 
-            // Console.Read();
+                // get all ids from json response
+                List<string> ids = jsonManager.getResults(jsonResponse, "\"id\":\"", "\",\"");
+
+                // loop through each id
+                foreach (string id in ids)
+                {
+                    Console.WriteLine($"{id}");
+
+                    string pdfUrl = $"https://va.lvceli.lv/Request/request/Application/GetPermissionPdfFile?id={id}";
+
+                    // download pdf and get results
+                    pdfManager.getResults(client, pdfUrl, true);
+                }
+            }
+
+            
             //Console.WriteLine($"Execution Time: {watch.ElapsedMilliseconds} ms");
 
             // append data to sheet
-            //sheetsManager.CreateEntry("Test document", spreadsheetId, pdfManager.Results);
+            //sheetsManager.CreateEntry(sheetName, sheetId, pdfManager.Results
+            
         }
 
 
-        static async Task<string> SendPostRequest(string cookieValue, string tokenValue)
+        static async Task<string> SendPostRequest(string cookieValue, int page, string tokenValue)
         {
             // URL for the POST request
             string url = "https://va.lvceli.lv/Request/request";
@@ -120,8 +176,8 @@ namespace PDF_project
             // JSON payload
             var postData = new PostData()
             {
-                page = 1,
-                pagesize = 10,
+                page = page,
+                pagesize = 5,
             };
 
             // create a request message with method, URL, and content
@@ -169,6 +225,7 @@ namespace PDF_project
             }
         }
 
+
         static async Task<string> getCookieValueAsync(string url, string cookieName)
         {
             HttpResponseMessage response = await client.GetAsync(url);
@@ -193,6 +250,7 @@ namespace PDF_project
         }
 
 
+        // function that returns verification token value for sending request
         static async Task<string> getVerificationTokenValueAsync(string url)
         {
             // send a GET request to the specified URL

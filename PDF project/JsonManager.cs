@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 
@@ -23,36 +24,40 @@ namespace PDF_project
 
 
         // read json to return list of id's
-        public List<string> getResults(string jsonResponse)
+        public List<string> getResults(string jsonResponse, string startPattern, string endPattern)
         {
-            try
-            {
-                // Parse the JSON string
-                JObject jsonObject = JObject.Parse(jsonResponse);
+            // clear all entries from the list
+            ids.Clear();
 
-                // Check if "results" array exists
-                if (jsonObject.TryGetValue("results", out JToken resultsToken) && resultsToken is JArray resultsArray)
-                {
-                    // Iterate through each result and get the "id" value
-                    foreach (JToken result in resultsArray)
-                    {
-                        string id = result.Value<string>("id");
-                        ids.Add(id);
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("No 'results' array found in the JSON response.");
-                    // Handle the absence of the 'results' array as needed
-                }
-            }
-            catch (JsonException ex)
+
+            string pattern = $"{Regex.Escape(startPattern)}(.*?){Regex.Escape(endPattern)}";
+            
+            MatchCollection matches = Regex.Matches(jsonResponse, pattern);
+
+            foreach (Match match in matches)
             {
-                Console.WriteLine($"Error parsing JSON: {ex.Message}");
-                // Handle the exception as needed
+                if (match.Success)
+                {
+                    // Group 1 contains the value between the patterns
+                    string extractedValue = match.Groups[1].Value;
+                    ids.Add(extractedValue);
+                }
             }
 
             return ids;
+        }
+
+        public int getMaxCount(string jsonResponse)
+        {
+            int startIndex = jsonResponse.IndexOf("\"maxCount\":");
+
+            string result = jsonResponse.Substring(startIndex + 10, 4);
+
+            int.TryParse(result, out int maxCount);
+
+            Console.WriteLine($"Total amount of PDF docs: {maxCount}");
+
+            return maxCount;
         }
     }
 }

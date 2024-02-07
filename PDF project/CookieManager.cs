@@ -23,6 +23,8 @@ namespace PDF_project
 
         public string getCookieValueFromResponse(HttpResponseMessage response, string cookieName)
         {
+            Console.WriteLine("Getting cookie value...");
+
             if (response == null)
             {
                 throw new ArgumentNullException(nameof(response));
@@ -63,6 +65,8 @@ namespace PDF_project
 
         public string getTokenValueFromResponse(HttpResponseMessage response, string headerName)
         {
+            Console.WriteLine("Getting token value...");
+
             if (response == null)
             {
                 throw new ArgumentNullException(nameof(response));
@@ -91,6 +95,8 @@ namespace PDF_project
 
         public bool verifyCookie()
         {
+            Console.WriteLine("Verifying cookie...");
+
             // get current time
             DateTime currentTime = DateTime.Now;
 

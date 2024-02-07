@@ -23,6 +23,8 @@ namespace PDF_project
         // create new spreadsheet
         public Spreadsheet CreateNew(string documentName)
         {
+            Console.WriteLine("Creating new Google Sheet...");
+
             if (string.IsNullOrEmpty(documentName))
                 throw new ArgumentNullException(nameof(documentName));
             
@@ -51,13 +53,16 @@ namespace PDF_project
             }
         }
 
+
         // create new entry
         public void CreateEntry(string sheetName, string spreadsheetId, List<object> objectList)
         {
+            Console.WriteLine("Getting sheet id...");
+
             using (var sheetsService = new SheetsService(new BaseClientService.Initializer() { HttpClientInitializer = _credential }))
             {
                 // specify the range of cells
-                var range = $"{sheetName}!A:H";
+                var range = $"{sheetName}!A:O";
                 var valueRange = new ValueRange();
 
                 valueRange.Values = new List<IList<object>> { objectList };
@@ -69,6 +74,23 @@ namespace PDF_project
                 // save response for debugging
                 var appendResponse = appendRequest.Execute();
             }
+        }
+
+
+        // get spreadsheet id for further actions with sheets
+        public string getId(string sheetUrl)
+        {
+            string id = "";
+            
+            int startIndex = sheetUrl.IndexOf("/d/");
+            int endIndex = sheetUrl.IndexOf("/edit", startIndex + "/d/".Length);
+
+            if (startIndex != -1 && endIndex != -1)
+            {
+                id = sheetUrl.Substring(startIndex + "/d/".Length, endIndex - startIndex - "/d/".Length);
+            }
+
+            return id;
         }
     }
 }
