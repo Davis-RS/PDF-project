@@ -135,9 +135,10 @@ namespace PDF_project
             }
 
             // number of loops to complete 
-            float loops = itemCount / 200;
-
-            // Math.Ceiling(loops)
+            double loops = itemCount / 200;
+            loops = Math.Ceiling(loops);
+            Console.Out.WriteLine($"No of loops: {loops}");
+            
             for (int i = 0; i < 1; i++)
             {
                 // send POST request

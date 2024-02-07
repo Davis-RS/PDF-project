@@ -32,8 +32,8 @@ namespace PDF_project
             "Maršruts:", 
             "Garums:", 
             "Platums:", 
-            "Augstums no brauktuves:", 
-            "Transportlīdzekļa faktiskā masa (ar kravu) līdz:", 
+            "Augstums no braukt", 
+            "Transportlīdzekļa faktiskā masa", 
             "Asu skaits:", 
             "Slodze uz asi(t):", 
             "Attālums starp asīm:" 
@@ -52,6 +52,8 @@ namespace PDF_project
             get { return pageText; }
             set { pageText = value; }
         }
+
+
         // download pdf file
         private void getPageText(HttpClient client, string pdfUrl, bool writePageText)
         {
@@ -111,7 +113,7 @@ namespace PDF_project
                 // find the index
                 int index = pageText.IndexOf(indexes[i]);
 
-                if (index != -1 && i == 1) // derīga no:
+                if (index != -1 && i == 1) // derīga no
                 {
                     string result = pageText.Substring(index + indexes[i].Length, 10);
 
@@ -133,12 +135,12 @@ namespace PDF_project
                     string trimmedResult = substringBetween.Trim();
 
                     // display the result
-                    Console.WriteLine($"Text after 'Kustība atļauta:': '{trimmedResult}'");
+                    Console.WriteLine($"Text after '{indexes[i]}': '{trimmedResult}'");
 
                     // add result to results list
                     results.Add(trimmedResult);
                 }
-                else if (index != -1 && i == 7) // maršruts:
+                else if (index != -1 && i == 7) // maršruts
                 {
                     // get end index
                     int endIndex = pageText.IndexOf("Kustība atļauta:");
@@ -150,10 +152,36 @@ namespace PDF_project
                     string trimmedResult = substringBetween.Trim();
 
                     // display the result
-                    Console.WriteLine($"Text after 'Maršruts:': '{trimmedResult}'");
+                    Console.WriteLine($"Text after '{indexes[i]}': '{trimmedResult}'");
 
                     // add result to results list
                     results.Add(trimmedResult);
+                }
+                else if (index != -1 && i == 10) // augstums no brauktuves
+                {
+                    int endIndex = pageText.IndexOf(indexes[11]);
+
+                    // get the substring between the start and end keywords
+                    string substringBetween = pageText.Substring(index + indexes[i].Length + 7, 7);
+
+                    // get the substring starting from the end of the keyword
+                    string trimmedResult = substringBetween.Trim();
+
+                    // display the result
+                    Console.WriteLine($"Text after '{indexes[i]}': '{trimmedResult}'");
+
+                    // add result to results list
+                    results.Add(trimmedResult);
+                }
+                else if (index != -1 && i == 11) // transportlidzekla faktiska masa
+                {
+                    string result = pageText.Substring(index + indexes[i].Length + 19, 7);
+
+                    // display the result
+                    Console.WriteLine($"Text after '{indexes[i]}': '{result}'");
+
+                    // add result to results list
+                    results.Add(result);
                 }
                 else if (index != -1 && i == 14) // attālums starp asīm
                 {
@@ -174,7 +202,7 @@ namespace PDF_project
                     trimmedResult = trimmedResult.Trim();
 
                     // display the result
-                    Console.WriteLine($"Text after 'Attālums starp asīm:': '{trimmedResult}'");
+                    Console.WriteLine($"Text after '{indexes[i]}': '{trimmedResult}'");
 
                     // add result to results list
                     results.Add(trimmedResult);

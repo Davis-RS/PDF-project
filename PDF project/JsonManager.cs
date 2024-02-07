@@ -51,7 +51,7 @@ namespace PDF_project
         {
             int startIndex = jsonResponse.IndexOf("\"maxCount\":");
 
-            string result = jsonResponse.Substring(startIndex + 10, 4);
+            string result = jsonResponse.Substring(startIndex + 11, 4);
 
             int.TryParse(result, out int maxCount);
 
