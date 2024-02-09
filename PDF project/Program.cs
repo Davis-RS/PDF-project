@@ -104,20 +104,17 @@ namespace PDF_project
            
             //---------------------------------------------------------------------------------------------------------------------------------------
 
-            for (var i = 0; i < 1; i++)
+            if (cookieManager.verifyCookie())
             {
-                if (cookieManager.verifyCookie())
-                {
-                    Console.WriteLine("Cookie is not valid!");
-                    cookieValue = await getCookieValueAsync(requestUrl, ".AspNetCore.Antiforgery.Bh1b6bYpeVU");
-                    verificationTokenValue = await getVerificationTokenValueAsync(requestUrl);
-                }
-                else
-                {
-                    Console.WriteLine("Cookie is valid!");
-                }
-                Thread.Sleep(1000);
+                Console.WriteLine("Cookie is not valid!");
+                cookieValue = await getCookieValueAsync(requestUrl, ".AspNetCore.Antiforgery.Bh1b6bYpeVU");
+                verificationTokenValue = await getVerificationTokenValueAsync(requestUrl);
             }
+            else
+            {
+                Console.WriteLine("Cookie is valid!");
+            }
+
 
             try
             {
@@ -135,11 +132,10 @@ namespace PDF_project
             }
 
             // number of loops to complete 
-            double loops = itemCount / 200;
-            loops = Math.Ceiling(loops);
+            double loops = (int)Math.Ceiling((double)itemCount / 200);
             Console.Out.WriteLine($"No of loops: {loops}");
             
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 5; i++)
             {
                 // send POST request
                 jsonResponse = await SendPostRequest(cookieValue, i+1, verificationTokenValue);
@@ -151,12 +147,12 @@ namespace PDF_project
                 // loop through each id
                 foreach (string id in ids)
                 {
-                    Console.WriteLine($"{id}");
+                    Console.WriteLine($"PDF id: {id}");
 
                     string pdfUrl = $"https://va.lvceli.lv/Request/request/Application/GetPermissionPdfFile?id={id}";
 
                     // download pdf and get results
-                    pdfManager.getResults(client, pdfUrl, true);
+                    pdfManager.getResults(client, pdfUrl, false, false);
                 }
             }
 

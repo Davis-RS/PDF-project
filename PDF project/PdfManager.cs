@@ -16,6 +16,7 @@ namespace PDF_project
     internal class PdfManager
     {
         // variable
+        private List<string> resultsFailed = new List<string>();
         private List<object> results = new List<object>();
         private string pageText = string.Empty;
         
@@ -41,6 +42,12 @@ namespace PDF_project
 
 
         // property
+        public List<string> ResultsFailed
+        {
+            get { return resultsFailed; }
+            set { resultsFailed = value; }
+        }
+
         public List<object> Results
         {
             get { return results; }
@@ -51,6 +58,14 @@ namespace PDF_project
         {
             get { return pageText; }
             set { pageText = value; }
+        }
+
+
+        // check if extracting essential values was succesful (not "-")
+        bool CheckFirstFiveValues(List<object> list)
+        {
+            // Use LINQ to check if the first 5 values are not "-"
+            return list.Take(8).All(value => value != "-");
         }
 
 
@@ -92,7 +107,7 @@ namespace PDF_project
             }
         }
 
-        public List<object> getResults(HttpClient client, string pdfUrl, bool writePageText)
+        public List<object> getResults(HttpClient client, string pdfUrl, bool writePageText, bool debugMode)
         {
             // get page text
             getPageText(client, pdfUrl, writePageText);
@@ -106,7 +121,6 @@ namespace PDF_project
             // empty result list
             results.Clear();
 
-
             // extracting specific text
             for (int i = 0; i < indexes.Count; i++)
             {
@@ -117,8 +131,11 @@ namespace PDF_project
                 {
                     string result = pageText.Substring(index + indexes[i].Length, 10);
 
-                    // display the result
-                    Console.WriteLine($"Text after '{indexes[i]}': '{result}'");
+                    if (debugMode)
+                    {
+                        // display the result
+                        Console.WriteLine($"Text after '{indexes[i]}': '{result}'");
+                    }
 
                     // add result to results list
                     results.Add(result);
@@ -133,10 +150,13 @@ namespace PDF_project
 
                     // take the next line
                     string trimmedResult = substringBetween.Trim();
-
-                    // display the result
-                    Console.WriteLine($"Text after '{indexes[i]}': '{trimmedResult}'");
-
+                    
+                    if (debugMode)
+                    {
+                        // display the result
+                        Console.WriteLine($"Text after '{indexes[i]}': '{trimmedResult}'");
+                    }
+                    
                     // add result to results list
                     results.Add(trimmedResult);
                 }
@@ -151,8 +171,11 @@ namespace PDF_project
                     // get the substring starting from the end of the keyword
                     string trimmedResult = substringBetween.Trim();
 
-                    // display the result
-                    Console.WriteLine($"Text after '{indexes[i]}': '{trimmedResult}'");
+                    if (debugMode)
+                    {
+                        // display the result
+                        Console.WriteLine($"Text after '{indexes[i]}': '{trimmedResult}'");
+                    }
 
                     // add result to results list
                     results.Add(trimmedResult);
@@ -167,8 +190,11 @@ namespace PDF_project
                     // get the substring starting from the end of the keyword
                     string trimmedResult = substringBetween.Trim();
 
-                    // display the result
-                    Console.WriteLine($"Text after '{indexes[i]}': '{trimmedResult}'");
+                    if (debugMode)
+                    {
+                        // display the result
+                        Console.WriteLine($"Text after '{indexes[i]}': '{trimmedResult}'");
+                    }
 
                     // add result to results list
                     results.Add(trimmedResult);
@@ -177,8 +203,11 @@ namespace PDF_project
                 {
                     string result = pageText.Substring(index + indexes[i].Length + 19, 7);
 
-                    // display the result
-                    Console.WriteLine($"Text after '{indexes[i]}': '{result}'");
+                    if (debugMode)
+                    {
+                        // display the result
+                        Console.WriteLine($"Text after '{indexes[i]}': '{result}'");
+                    }
 
                     // add result to results list
                     results.Add(result);
@@ -201,8 +230,11 @@ namespace PDF_project
                     trimmedResult = trimmedResult.Replace("⏌", "");
                     trimmedResult = trimmedResult.Trim();
 
-                    // display the result
-                    Console.WriteLine($"Text after '{indexes[i]}': '{trimmedResult}'");
+                    if (debugMode)
+                    {
+                        // display the result
+                        Console.WriteLine($"Text after '{indexes[i]}': '{trimmedResult}'");
+                    }
 
                     // add result to results list
                     results.Add(trimmedResult);
@@ -224,8 +256,11 @@ namespace PDF_project
                     // trim both ends of result
                     trimmedResult = result.Trim();
 
-                    // display the result
-                    Console.WriteLine($"Text after '{indexes[i]}': '" + trimmedResult + "'");
+                    if (debugMode)
+                    {
+                        // display the result
+                        Console.WriteLine($"Text after '{indexes[i]}': '{trimmedResult}'");
+                    }
 
                     // add result to results list
                     results.Add(trimmedResult);
@@ -233,12 +268,26 @@ namespace PDF_project
                 }
                 else
                 {
-                    Console.WriteLine($"Substring '{indexes[i]}' not found in the input string.");
+                    if (debugMode)
+                    {
+                        Console.WriteLine($"Substring '{indexes[i]}' not found in the input string.");
+                    }
+                    
                     results.Add("-");
                 }
             }
 
             Console.WriteLine($"Execution Time: {watch.ElapsedMilliseconds} ms");
+
+            if (CheckFirstFiveValues(results))
+            {
+                Console.WriteLine("Extraction successful!");
+            }
+            else
+            {
+                Console.WriteLine("Ectration wasn't successful!");
+                resultsFailed.Add(pdfUrl);
+            }
 
             return results;
         }        
