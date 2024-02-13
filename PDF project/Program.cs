@@ -26,6 +26,10 @@ namespace PDF_project
 
         static async Task Main()
         {
+            // Gmail user credentials
+            string fromMail = "4davisroberts@gmail.com";
+            string fromPassword = "xwsbxqkefxvzolfr";
+
             // google api user credentials
             string googleClientId = "936433672894-6582lb3te5cg9vv5628isvos5qje1gat.apps.googleusercontent.com";
             string googleClientSecret = "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";
@@ -69,6 +73,10 @@ namespace PDF_project
                 "Attālums starp asīm:"
             };
 
+            var toEmails = new List<string>()
+            {
+                "4davisroberts@gmail.com"
+            };
 
             // new Google Sheets service
             string[] scopes = new[] { Google.Apis.Sheets.v4.SheetsService.Scope.Spreadsheets };
@@ -86,7 +94,7 @@ namespace PDF_project
 
 
             // create new sheet and get all sheet info
-            /*
+            
             var newSheet = sheetsManager.CreateNew(sheetName);
             
             string sheetUrl = newSheet.SpreadsheetUrl;
@@ -99,11 +107,11 @@ namespace PDF_project
                         
             // fill sheet with headers
             sheetsManager.CreateEntry(sheetName, sheetId, sheetHeaders);
-            */
+            
 
-           
             //---------------------------------------------------------------------------------------------------------------------------------------
 
+            // cookie and verification token verification
             if (cookieManager.verifyCookie())
             {
                 Console.WriteLine("Cookie is not valid!");
@@ -115,10 +123,10 @@ namespace PDF_project
                 Console.WriteLine("Cookie is valid!");
             }
 
-
+            // get max count of items
             try
             {
-                jsonResponse = await SendPostRequest(cookieValue, 1, verificationTokenValue);
+                jsonResponse = await SendPostRequest(cookieValue, 1, 1, verificationTokenValue);
             }
             catch (Exception ex)
             {
@@ -131,14 +139,30 @@ namespace PDF_project
                 itemCount = jsonManager.getMaxCount(jsonResponse);
             }
 
+            // number of items in one page
+            int pagesize = 200;
+
             // number of loops to complete 
-            double loops = (int)Math.Ceiling((double)itemCount / 200);
+            double loops = (int)Math.Ceiling((double)itemCount / pagesize);
             Console.Out.WriteLine($"No of loops: {loops}");
             
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < loops; i++)
             {
+                // cookie and verification token verification
+                if (cookieManager.verifyCookie())
+                {
+                    Console.WriteLine("Cookie is not valid!");
+                    cookieValue = await getCookieValueAsync(requestUrl, ".AspNetCore.Antiforgery.Bh1b6bYpeVU");
+                    verificationTokenValue = await getVerificationTokenValueAsync(requestUrl);
+                }
+                else
+                {
+                    Console.WriteLine("Cookie is valid!");
+                }
+
+
                 // send POST request
-                jsonResponse = await SendPostRequest(cookieValue, i+1, verificationTokenValue);
+                jsonResponse = await SendPostRequest(cookieValue, i+1, pagesize, verificationTokenValue);
                 Console.WriteLine(jsonResponse);
 
                 // get all ids from json response
@@ -152,20 +176,20 @@ namespace PDF_project
                     string pdfUrl = $"https://va.lvceli.lv/Request/request/Application/GetPermissionPdfFile?id={id}";
 
                     // download pdf and get results
-                    pdfManager.getResults(client, pdfUrl, false, false);
+                    pdfManager.getResults(client, pdfUrl, false, true);
+
+                    // append data to sheet
+                    sheetsManager.CreateEntry(sheetName, sheetId, pdfManager.Results);
                 }
             }
 
-            
-            //Console.WriteLine($"Execution Time: {watch.ElapsedMilliseconds} ms");
-
-            // append data to sheet
-            //sheetsManager.CreateEntry(sheetName, sheetId, pdfManager.Results
-            
+            // send emails to every user
+            EmailManager emailManager = new EmailManager();
+            emailManager.sendEmails(toEmails, fromMail, fromPassword, sheetUrl);
         }
 
 
-        static async Task<string> SendPostRequest(string cookieValue, int page, string tokenValue)
+        static async Task<string> SendPostRequest(string cookieValue, int page, int pagesize, string tokenValue)
         {
             // URL for the POST request
             string url = "https://va.lvceli.lv/Request/request";
@@ -174,7 +198,7 @@ namespace PDF_project
             var postData = new PostData()
             {
                 page = page,
-                pagesize = 5,
+                pagesize = pagesize,
             };
 
             // create a request message with method, URL, and content
