@@ -17,7 +17,7 @@ namespace PDF_project
                 // send email
                 MailMessage message = new MailMessage();
                 message.From = new MailAddress(fromMail);
-                message.Subject = "jauns slepenais draudzins!";
+                message.Subject = "All data from va.lvceli.lv is collected!";
                 message.To.Add(new MailAddress(email));
                 message.Body = $"<html><body><strong>All data from https://va.lvceli.lv/ has been collected and put in Google Sheets: </strong>{emailBody} </body></html>";
                 message.IsBodyHtml = true;

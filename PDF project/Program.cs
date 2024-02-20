@@ -13,6 +13,8 @@ using testing;
 using System.Text.Json;
 using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 using iText.Kernel.Pdf.Action;
+using Google.Apis.Auth.OAuth2.Responses;
+using Google.Apis.Sheets.v4.Data;
 
 namespace PDF_project
 {
@@ -92,11 +94,28 @@ namespace PDF_project
             // JsonManager instance
             JsonManager jsonManager = new JsonManager();
 
+            Spreadsheet newSheet = null;
 
-            // create new sheet and get all sheet info
-            
-            var newSheet = sheetsManager.CreateNew(sheetName);
-            
+            // create new sheet
+            try
+            {
+                newSheet = sheetsManager.CreateNew(sheetName);
+            }
+            catch (TokenResponseException ex)
+            {
+                Console.Out.WriteLine($"Token error while creating spreadsheet: {ex.Message}");
+                Console.Out.WriteLine($"Trying again to get Google auth screen.");
+
+                // try again to get google auth popup
+                newSheet = sheetsManager.CreateNew(sheetName);
+            }
+            catch (Exception ex)
+            {
+                // Handle other exceptions if needed
+                Console.WriteLine($"Error while creating spreadsheet: {ex.Message}");
+            }
+
+            // get all sheet info
             string sheetUrl = newSheet.SpreadsheetUrl;
             Console.WriteLine($"New sheet name: {sheetName} sheet url: {sheetUrl}");
 
