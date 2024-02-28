@@ -21,7 +21,7 @@ namespace PDF_project
         }
 
         // create new spreadsheet
-        public Spreadsheet CreateNew(string documentName)
+        public Spreadsheet createNew(string documentName)
         {
             Console.WriteLine("Creating new Google Sheet...");
 
@@ -55,9 +55,8 @@ namespace PDF_project
 
 
         // create new entry
-        public void CreateEntry(string sheetName, string spreadsheetId, List<object> objectList)
+        public void createEntry(string sheetName, string sheetId, List<object> objectList)
         {
-            Console.WriteLine("Getting sheet id...");
 
             using (var sheetsService = new SheetsService(new BaseClientService.Initializer() { HttpClientInitializer = _credential }))
             {
@@ -68,7 +67,7 @@ namespace PDF_project
                 valueRange.Values = new List<IList<object>> { objectList };
 
                 // create append request to be executed
-                var appendRequest = sheetsService.Spreadsheets.Values.Append(valueRange, spreadsheetId, range);
+                var appendRequest = sheetsService.Spreadsheets.Values.Append(valueRange, sheetId, range);
                 appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
 
                 // save response for debugging
@@ -77,9 +76,91 @@ namespace PDF_project
         }
 
 
+        // get a value from sheet
+        public ValueRange getValue(string sheetId, string valueRange)
+        {
+            if (string.IsNullOrEmpty(sheetId))
+            {
+                throw new ArgumentNullException(nameof(sheetId));
+            }
+            if (string.IsNullOrEmpty(valueRange))
+            {
+                throw new ArgumentNullException(nameof(valueRange));
+            }
+
+            using (var sheetsService = new SheetsService(new BaseClientService.Initializer() { HttpClientInitializer = _credential }))
+            {
+                var getValueRequest = sheetsService.Spreadsheets.Values.Get(sheetId, valueRange);
+                return getValueRequest.Execute();
+            }
+        }
+
+
+        // remove a value from sheet
+        public void removeValue(string sheetId, string valueRange)
+        {
+            if (string.IsNullOrEmpty(sheetId))
+            {
+                throw new ArgumentNullException(nameof(sheetId));
+            }
+            if (!string.IsNullOrEmpty(valueRange))
+            {
+                throw new ArgumentNullException(nameof(valueRange));
+            }
+
+            using (var sheetsService = new SheetsService(new BaseClientService.Initializer() { HttpClientInitializer = _credential }))
+            {
+                var removeValueRequest = sheetsService.Spreadsheets.Values.Clear(new ClearValuesRequest(), sheetId, valueRange);
+                removeValueRequest.Execute();
+            }
+        }
+
+
+        // add a value to sheet
+        public void updateEntry(string sheetId, string sheetName, string value)
+        {
+            Console.WriteLine("Updating last id cell...");
+
+
+            if (string.IsNullOrEmpty(sheetId))
+            {
+                throw new ArgumentNullException(nameof(sheetId));
+            }
+            if (!string.IsNullOrEmpty(value))
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            using (var sheetsService = new SheetsService(new BaseClientService.Initializer() { HttpClientInitializer = _credential }))
+            {
+                // specify the range of cells
+                var range = $"{sheetName}!R2";
+                var valueRange = new ValueRange();
+
+                var objectList = new List<object>() { value };
+                valueRange.Values = new List<IList<object>> { objectList };
+
+                // create append request to be executed
+                var updateRequest = sheetsService.Spreadsheets.Values.Update(valueRange, sheetId, range);
+                updateRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.USERENTERED;
+
+                // save response for debugging
+                var updateResponse = updateRequest.Execute();
+
+                if (updateResponse != null)
+                {
+                    Console.WriteLine($"Last id ({value}) cell updated.");
+                }
+            }
+
+        }
+
+
         // get spreadsheet id for further actions with sheets
         public string getId(string sheetUrl)
         {
+            Console.WriteLine("Getting sheet id...");
+
             string id = "";
             
             int startIndex = sheetUrl.IndexOf("/d/");

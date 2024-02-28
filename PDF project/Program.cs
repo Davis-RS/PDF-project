@@ -35,16 +35,18 @@ namespace PDF_project
             // google api user credentials
             string googleClientId = "936433672894-6582lb3te5cg9vv5628isvos5qje1gat.apps.googleusercontent.com";
             string googleClientSecret = "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";
-            
-            // google sheets id
+
+            // google sheet url
+            string sheetUrl = "https://docs.google.com/spreadsheets/d/1gFPSD7rCyq_r9SrKMGb-c_v45MxDgGwmMK9QI74pXcU/edit#gid=759305647";
+            string sheetName = "sheet1";
+
+            // google sheets id - leave blank
             string sheetId = "";
                    
             // spreadsheet name as current date and time
             // get the current date and time
             DateTime currentDateTime = DateTime.Now;
 
-            // format the date and time as a string
-            string sheetName = currentDateTime.ToString("yyyy.MM.dd HH-mm");
 
             // site values
             string requestUrl = "https://va.lvceli.lv/Request/request";
@@ -55,25 +57,6 @@ namespace PDF_project
             // JSON values
             int itemCount = 0;
 
-
-            var sheetHeaders = new List<object>()
-            {
-                "Atļaujas Nr.",
-                "Atļauja derīga no:",
-                "Atļauja derīga līdz:",
-                "Pārvadātāja nosaukums:",
-                "Pārvadātāja reģ.nr.:",
-                "Izmaiņas veiktas:",
-                "Kustība atļauta:",
-                "Maršruts:",
-                "Transportlīdzekļa garums:",
-                "Transportlīdzekļa platums:",
-                "Transportlīdzekļa augstums no brauktuves:",
-                "Transportlīdzekļa kopējā faktiskā masa:",
-                "Asu skaits:",
-                "Slodze uz asi(t):",
-                "Attālums starp asīm:"
-            };
 
             var toEmails = new List<string>()
             {
@@ -94,12 +77,14 @@ namespace PDF_project
             // JsonManager instance
             JsonManager jsonManager = new JsonManager();
 
+
+            /*
             Spreadsheet newSheet = null;
 
             // create new sheet
             try
             {
-                newSheet = sheetsManager.CreateNew(sheetName);
+                newSheet = sheetsManager.createNew(sheetName);
             }
             catch (TokenResponseException ex)
             {
@@ -107,29 +92,28 @@ namespace PDF_project
                 Console.Out.WriteLine($"Trying again to get Google auth screen.");
 
                 // try again to get google auth popup
-                newSheet = sheetsManager.CreateNew(sheetName);
+                newSheet = sheetsManager.createNew(sheetName);
             }
             catch (Exception ex)
             {
                 // Handle other exceptions if needed
                 Console.WriteLine($"Error while creating spreadsheet: {ex.Message}");
             }
+            */
 
-            // get all sheet info
-            string sheetUrl = newSheet.SpreadsheetUrl;
-            Console.WriteLine($"New sheet name: {sheetName} sheet url: {sheetUrl}");
 
             // get sheet id
-            string newId = sheetsManager.getId(sheetUrl);
-            sheetId = newId;
+            sheetId = sheetsManager.getId(sheetUrl);
             Console.Out.WriteLine($"Sheet id: {sheetId}");
-                        
-            // fill sheet with headers
-            sheetsManager.CreateEntry(sheetName, sheetId, sheetHeaders);
+
+
+            Console.Out.WriteLine(sheetsManager.updateEntry(sheetId, ));
             
+            /*
 
             //---------------------------------------------------------------------------------------------------------------------------------------
 
+            
             // cookie and verification token verification
             if (cookieManager.verifyCookie())
             {
@@ -198,13 +182,14 @@ namespace PDF_project
                     pdfManager.getResults(client, pdfUrl, false, true);
 
                     // append data to sheet
-                    sheetsManager.CreateEntry(sheetName, sheetId, pdfManager.Results);
+                    sheetsManager.createEntry(sheetName, sheetId, pdfManager.Results);
                 }
             }
 
             // send emails to every user
             EmailManager emailManager = new EmailManager();
             emailManager.sendEmails(toEmails, fromMail, fromPassword, sheetUrl);
+            */
         }
 
 

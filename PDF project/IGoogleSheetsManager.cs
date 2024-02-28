@@ -9,8 +9,16 @@ namespace PDF_project
 {
     internal interface IGoogleSheetsManager
     {
-        Spreadsheet CreateNew(string documentName);
+        Spreadsheet createNew(string documentName);
 
-        void CreateEntry(string sheetName, string spreadsheetId, List<object> objectList);
+        void createEntry(string sheetName, string sheetId, List<object> objectList);
+
+        ValueRange getValue(string sheetId, string valueRange);
+
+        void removeValue(string sheetId, string valueRange);
+
+        void updateEntry(string sheetName, string sheetId, string value);
+
+        string getId(string sheetUrl);
     }
 }
