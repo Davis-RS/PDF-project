@@ -64,7 +64,7 @@ namespace PDF_project
         // check if extracting essential values was succesful
         bool CheckFirstFiveValues(List<object> list)
         {
-            for (int i = 1; i < 8; i++)
+            for (int i = 1; i < 5; i++)
             {
                 if (list[i] == "-")
                 {
@@ -190,10 +190,10 @@ namespace PDF_project
                 else if (index != -1 && i == 8) // garums
                 {
                     // get end index
-                    int endIndex = pageText.IndexOf(indexes[10]);
+                    int endIndex = pageText.IndexOf("m", index + 7);
 
                     // get the substring between the start and end keywords
-                    string substringBetween = pageText.Substring(index + indexes[i].Length, endIndex - (index + indexes[i].Length));
+                    string substringBetween = pageText.Substring(index + 7, endIndex - index - 6);
 
                     // get the substring starting from the end of the keyword
                     string trimmedResult = substringBetween.Trim();
@@ -210,10 +210,10 @@ namespace PDF_project
                 else if (index != -1 && i == 9) // platums
                 {
                     // get end index
-                    int endIndex = pageText.IndexOf(indexes[11]);
+                    int endIndex = pageText.IndexOf("m", index + 8);
 
                     // get the substring between the start and end keywords
-                    string substringBetween = pageText.Substring(index + indexes[i].Length, endIndex - (index + indexes[i].Length));
+                    string substringBetween = pageText.Substring(index + 8, endIndex - index - 7);
 
                     // get the substring starting from the end of the keyword
                     string trimmedResult = substringBetween.Trim();

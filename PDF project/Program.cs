@@ -255,7 +255,7 @@ namespace PDF_project
             sheetsManager.updateEntry(sheetId, "LastID", currentLastID);
 
             // notify for failed results
-            Console.WriteLine($"PDF document exctraction failed: {pdfManager.ResultsFailed}");
+            Console.WriteLine($"PDF document exctractions failed: {pdfManager.ResultsFailed.Count}");
 
             // send emails to every user
             EmailManager emailManager = new EmailManager();
