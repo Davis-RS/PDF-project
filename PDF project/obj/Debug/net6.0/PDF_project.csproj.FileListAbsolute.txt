@@ -107,3 +107,4 @@ C:\Users\4davi\source\repos\PDF project\PDF project\bin\Debug\net6.0\System.Code
 C:\Users\4davi\source\repos\PDF project\PDF project\bin\Debug\net6.0\System.Management.dll
 C:\Users\4davi\source\repos\PDF project\PDF project\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.Management.dll
 C:\Users\4davi\source\repos\PDF project\PDF project\obj\Debug\net6.0\PDF_project.sourcelink.json
+C:\Users\4davi\source\repos\PDF project\PDF project\bin\Debug\net6.0\HtmlAgilityPack.dll

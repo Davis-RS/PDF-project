@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static Google.Apis.Requests.BatchRequest;
 using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 
 namespace PDF_project
@@ -56,8 +57,16 @@ namespace PDF_project
             int.TryParse(result, out int maxCount);
 
             Console.WriteLine($"Total amount of PDF docs: {maxCount}");
-
             return maxCount;
+        }
+
+        public string getCurrentLastID(string jsonResponse)
+        {
+            int startIndex = jsonResponse.IndexOf("\"id\":");
+
+            string currentLastID = jsonResponse.Substring(startIndex + 6, 6);
+
+            return currentLastID;
         }
     }
 }

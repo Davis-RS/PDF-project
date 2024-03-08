@@ -15,6 +15,8 @@ using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 using iText.Kernel.Pdf.Action;
 using Google.Apis.Auth.OAuth2.Responses;
 using Google.Apis.Sheets.v4.Data;
+using Google.Apis.Auth.OAuth2.Flows;
+using Google.Apis.Util.Store;
 
 namespace PDF_project
 {
@@ -28,47 +30,86 @@ namespace PDF_project
 
         static async Task Main()
         {
-            // Gmail user credentials
+            // PDF exctraction options
+            bool outputEachPdfText = false;
+            bool outputExtractedResults = false;
+
+            // emailing properties
+            // Gmail API user credentials
             string fromMail = "4davisroberts@gmail.com";
             string fromPassword = "xwsbxqkefxvzolfr";
 
-            // google api user credentials
-            string googleClientId = "936433672894-6582lb3te5cg9vv5628isvos5qje1gat.apps.googleusercontent.com";
-            string googleClientSecret = "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";
-
-            // google sheet url
-            string sheetUrl = "https://docs.google.com/spreadsheets/d/1gFPSD7rCyq_r9SrKMGb-c_v45MxDgGwmMK9QI74pXcU/edit#gid=759305647";
-            string sheetName = "sheet1";
-
-            // google sheets id - leave blank
-            string sheetId = "";
-                   
-            // spreadsheet name as current date and time
-            // get the current date and time
-            DateTime currentDateTime = DateTime.Now;
-
-
-            // site values
-            string requestUrl = "https://va.lvceli.lv/Request/request";
-            string cookieValue = "";
-            string verificationTokenValue = "";
-            string jsonResponse = "";
-
-            // JSON values
-            int itemCount = 0;
-
-
+            // list of emails to send messages to
             var toEmails = new List<string>()
             {
                 "4davisroberts@gmail.com"
             };
 
+
+            // google sheet properties
+            // google api user credentials
+            string googleClientId = "936433672894-6582lb3te5cg9vv5628isvos5qje1gat.apps.googleusercontent.com";
+            string googleClientSecret = "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";
+
+            // google sheet url
+            string sheetUrl = "https://docs.google.com/spreadsheets/d/1oBN75A_OSInwUhWrInb9HpbJLKzKfciCczp9NfhPmMY/edit#gid=1458323830";
+
+            // sheet tab name
+            string sheetName = "Atlaujas";
+
+
+            // google sheets id - leave blank
+            string sheetId = string.Empty;
+
+            // site values
+            string requestUrl = "https://va.lvceli.lv/Request/request";
+            string cookieValue = null;
+            string verificationTokenValue = string.Empty;
+            string jsonResponse = string.Empty;
+
+            // JSON values
+            int itemCount = 0; // keep 0
+
+            // number of items in one JSON page
+            int pagesize = 200;
+
+
             // new Google Sheets service
             string[] scopes = new[] { Google.Apis.Sheets.v4.SheetsService.Scope.Spreadsheets };
 
 
-            // GoogleManager instance
-            UserCredential credential = GoogleAuthentication.Login(googleClientId, googleClientSecret, scopes);
+            // Google credentials - old version
+            //UserCredential credential = GoogleAuthentication.Login(googleClientId, googleClientSecret, scopes);
+            
+            // get Google credentials (hopefully working after token expiration...)
+            UserCredential credential = null;
+
+            try
+            {
+                var clientSecrets = new ClientSecrets
+                {
+                    ClientId = googleClientId,
+                    ClientSecret = googleClientSecret
+                };
+
+                using (var stream = new FileStream("token.json", FileMode.OpenOrCreate, FileAccess.ReadWrite))
+                {
+                    credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
+                        clientSecrets,
+                        scopes,
+                        "user",
+                        CancellationToken.None,
+                        new FileDataStore("Books.ListMyLibrary"));
+                }
+
+                Console.WriteLine("Google authorization successful!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Google authorization failed: {ex.Message}");
+            }
+
+            // google sheets manager instance
             GoogleSheetsManager sheetsManager = new GoogleSheetsManager(credential);
 
             // PdfManager instance
@@ -78,53 +119,44 @@ namespace PDF_project
             JsonManager jsonManager = new JsonManager();
 
 
-            /*
-            Spreadsheet newSheet = null;
-
-            // create new sheet
-            try
-            {
-                newSheet = sheetsManager.createNew(sheetName);
-            }
-            catch (TokenResponseException ex)
-            {
-                Console.Out.WriteLine($"Token error while creating spreadsheet: {ex.Message}");
-                Console.Out.WriteLine($"Trying again to get Google auth screen.");
-
-                // try again to get google auth popup
-                newSheet = sheetsManager.createNew(sheetName);
-            }
-            catch (Exception ex)
-            {
-                // Handle other exceptions if needed
-                Console.WriteLine($"Error while creating spreadsheet: {ex.Message}");
-            }
-            */
-
-
             // get sheet id
             sheetId = sheetsManager.getId(sheetUrl);
             Console.Out.WriteLine($"Sheet id: {sheetId}");
 
+            // get Google sheet last ID
+            string sheetLastID = ExtractStringFromValueRange(sheetsManager.getValue(sheetId, "LastID!B1"));
+            Console.Out.WriteLine($"LastID value from Google sheet: {sheetLastID}");
 
-            Console.Out.WriteLine(sheetsManager.updateEntry(sheetId, ));
-            
-            /*
 
             //---------------------------------------------------------------------------------------------------------------------------------------
 
-            
+
+
             // cookie and verification token verification
             if (cookieManager.verifyCookie())
             {
                 Console.WriteLine("Cookie is not valid!");
-                cookieValue = await getCookieValueAsync(requestUrl, ".AspNetCore.Antiforgery.Bh1b6bYpeVU");
+
+                if (await getCookieValueSuccessAsync(requestUrl, ".AspNetCore.Antiforgery.Bh1b6bYpeVU"))
+                {
+                    cookieValue = cookieManager.CookieValue;
+                }
+                else
+                {
+                    Console.Out.WriteLine("Error while getting cookieValue.");
+                }
+
                 verificationTokenValue = await getVerificationTokenValueAsync(requestUrl);
+
+                // print values
+                Console.WriteLine($"Timeframe: {cookieManager.TimeFrame}");
+                Console.WriteLine($"Cookie value: {cookieManager.CookieValue}");
             }
             else
             {
                 Console.WriteLine("Cookie is valid!");
             }
+
 
             // get max count of items
             try
@@ -142,21 +174,47 @@ namespace PDF_project
                 itemCount = jsonManager.getMaxCount(jsonResponse);
             }
 
-            // number of items in one page
-            int pagesize = 200;
+            // get current last ID from jsonResponse
+            string currentLastID = jsonManager.getCurrentLastID(jsonResponse);
+            Console.WriteLine($"LastID value from va.lvceli.lv: {currentLastID}");
 
-            // number of loops to complete 
+
+            // number of loops to complete whole 
             double loops = (int)Math.Ceiling((double)itemCount / pagesize);
             Console.Out.WriteLine($"No of loops: {loops}");
-            
+
+            bool isUpdated = false;
+
+            // loops of 200 ids
             for (int i = 0; i < loops; i++)
             {
+                if (isUpdated)
+                {
+                    Console.Out.WriteLine("The list has been updated.");
+                    break;
+                }
+
                 // cookie and verification token verification
                 if (cookieManager.verifyCookie())
                 {
                     Console.WriteLine("Cookie is not valid!");
-                    cookieValue = await getCookieValueAsync(requestUrl, ".AspNetCore.Antiforgery.Bh1b6bYpeVU");
+
+                    client = new HttpClient();
+
+                    if(await getCookieValueSuccessAsync(requestUrl, ".AspNetCore.Antiforgery.Bh1b6bYpeVU"))
+                    {
+                        cookieValue = cookieManager.CookieValue;
+                    }
+                    else
+                    {
+                        Console.Out.WriteLine("Error while getting cookieValue.");
+                    }
+                    
                     verificationTokenValue = await getVerificationTokenValueAsync(requestUrl);
+
+                    // print values
+                    Console.WriteLine($"Timeframe: {cookieManager.TimeFrame}");
+                    Console.WriteLine($"Cookie value: {cookieManager.CookieValue}");
                 }
                 else
                 {
@@ -174,22 +232,55 @@ namespace PDF_project
                 // loop through each id
                 foreach (string id in ids)
                 {
+                    // check if 
+                    if (int.Parse(id) <= int.Parse(sheetLastID))
+                    {
+                        isUpdated = true;
+                        break;
+                    }
+
                     Console.WriteLine($"PDF id: {id}");
 
                     string pdfUrl = $"https://va.lvceli.lv/Request/request/Application/GetPermissionPdfFile?id={id}";
 
                     // download pdf and get results
-                    pdfManager.getResults(client, pdfUrl, false, true);
+                    pdfManager.getResults(client, pdfUrl, outputEachPdfText, outputExtractedResults);
 
                     // append data to sheet
                     sheetsManager.createEntry(sheetName, sheetId, pdfManager.Results);
                 }
             }
 
+            // update LastID entry for future updates
+            sheetsManager.updateEntry(sheetId, "LastID", currentLastID);
+
+            // notify for failed results
+            Console.WriteLine($"PDF document exctraction failed: {pdfManager.ResultsFailed}");
+
             // send emails to every user
             EmailManager emailManager = new EmailManager();
             emailManager.sendEmails(toEmails, fromMail, fromPassword, sheetUrl);
-            */
+            
+            
+        }
+
+
+        public static UserCredential RefreshToken(string googleClientId, string googleClientSecret, string refreshToken, string[] scopes)
+        {
+            var flow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
+            {
+                ClientSecrets = new ClientSecrets
+                {
+                    ClientId = googleClientId,
+                    ClientSecret = googleClientSecret
+                },
+                Scopes = scopes
+            });
+
+            TokenResponse tokenResponse = flow.RefreshTokenAsync("user", refreshToken, CancellationToken.None).Result;
+
+            // Create and return a new UserCredential with the refreshed token
+            return new UserCredential(flow, "user", tokenResponse);
         }
 
 
@@ -251,26 +342,20 @@ namespace PDF_project
         }
 
 
-        static async Task<string> getCookieValueAsync(string url, string cookieName)
+        static async Task<bool> getCookieValueSuccessAsync(string url, string cookieName)
         {
             HttpResponseMessage response = await client.GetAsync(url);
 
             if (response.IsSuccessStatusCode)
             {
-
-                // call function that returns cookie value
-                string cookieValue = cookieManager.getCookieValueFromResponse(response, cookieName);
                 Console.WriteLine("getCookieValueFromResponse is called.");
 
-                Console.WriteLine($"Timeframe: {cookieManager.TimeFrame}");
-                Console.WriteLine($"Cookie value: {cookieValue}");
-
-
-                return cookieValue;
+                return cookieManager.getCookieValueFromResponse(response, cookieName);
             }
             else
             {
-                return "Error while getting HttpResponse in getCookieValueAsync";
+                Console.WriteLine("Error while getting HttpResponse in getCookieValueAsync");
+                return false;
             }
         }
 
@@ -300,6 +385,24 @@ namespace PDF_project
 
             // return the value of the RequestVerificationToken if found
             return value;
+        }
+
+        static string ExtractStringFromValueRange(ValueRange valueRange)
+        {
+            // Extract the char from the ValueRange
+            // For example, assuming the ValueRange contains a single cell with a character
+            if (valueRange.Values != null && valueRange.Values.Count > 0 && valueRange.Values[0].Count > 0)
+            {
+                string cellValue = valueRange.Values[0][0]?.ToString();
+
+                if (!string.IsNullOrEmpty(cellValue))
+                {
+                    return cellValue; // Assuming the first character of the cell value
+                }
+            }
+
+            // Handle the case where the ValueRange doesn't contain the expected data
+            throw new InvalidOperationException("Invalid or empty ValueRange");
         }
     }
 }

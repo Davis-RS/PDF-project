@@ -61,11 +61,18 @@ namespace PDF_project
         }
 
 
-        // check if extracting essential values was succesful (not "-")
+        // check if extracting essential values was succesful
         bool CheckFirstFiveValues(List<object> list)
         {
-            // Use LINQ to check if the first 5 values are not "-"
-            return list.Take(8).All(value => value != "-");
+            for (int i = 1; i < 8; i++)
+            {
+                if (list[i] == "-")
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
 
@@ -164,6 +171,46 @@ namespace PDF_project
                 {
                     // get end index
                     int endIndex = pageText.IndexOf("Kustība atļauta:");
+
+                    // get the substring between the start and end keywords
+                    string substringBetween = pageText.Substring(index + indexes[i].Length, endIndex - (index + indexes[i].Length));
+
+                    // get the substring starting from the end of the keyword
+                    string trimmedResult = substringBetween.Trim();
+
+                    if (debugMode)
+                    {
+                        // display the result
+                        Console.WriteLine($"Text after '{indexes[i]}': '{trimmedResult}'");
+                    }
+
+                    // add result to results list
+                    results.Add(trimmedResult);
+                }
+                else if (index != -1 && i == 8) // garums
+                {
+                    // get end index
+                    int endIndex = pageText.IndexOf(indexes[10]);
+
+                    // get the substring between the start and end keywords
+                    string substringBetween = pageText.Substring(index + indexes[i].Length, endIndex - (index + indexes[i].Length));
+
+                    // get the substring starting from the end of the keyword
+                    string trimmedResult = substringBetween.Trim();
+
+                    if (debugMode)
+                    {
+                        // display the result
+                        Console.WriteLine($"Text after '{indexes[i]}': '{trimmedResult}'");
+                    }
+
+                    // add result to results list
+                    results.Add(trimmedResult);
+                }
+                else if (index != -1 && i == 9) // platums
+                {
+                    // get end index
+                    int endIndex = pageText.IndexOf(indexes[11]);
 
                     // get the substring between the start and end keywords
                     string substringBetween = pageText.Substring(index + indexes[i].Length, endIndex - (index + indexes[i].Length));

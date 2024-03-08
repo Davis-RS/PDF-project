@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "jnsMgBtfVg0Ybqzfr8yYzltTneDotX74Q5v4Lw2dP1GA987nOJcep8zap8GIf7WhUjU0lq6JGtKY1DX9rUgefQ==",
+  "dgSpecHash": "tgMTjVuTQmIEulOVoNrSmDjFtLquog4QAs5ok1sxKe2ZlObWVTzEcwXAMWlryrpDK/l+6x9+DKcwZJItz2vE+g==",
   "success": true,
   "projectFilePath": "C:\\Users\\4davi\\source\\repos\\PDF project\\PDF project\\PDF_project.csproj",
   "expectedPackageFiles": [
@@ -8,6 +8,7 @@
     "C:\\Users\\4davi\\.nuget\\packages\\google.apis.auth\\1.64.0\\google.apis.auth.1.64.0.nupkg.sha512",
     "C:\\Users\\4davi\\.nuget\\packages\\google.apis.core\\1.64.0\\google.apis.core.1.64.0.nupkg.sha512",
     "C:\\Users\\4davi\\.nuget\\packages\\google.apis.sheets.v4\\1.64.0.3148\\google.apis.sheets.v4.1.64.0.3148.nupkg.sha512",
+    "C:\\Users\\4davi\\.nuget\\packages\\htmlagilitypack\\1.11.57\\htmlagilitypack.1.11.57.nupkg.sha512",
     "C:\\Users\\4davi\\.nuget\\packages\\itext\\8.0.2\\itext.8.0.2.nupkg.sha512",
     "C:\\Users\\4davi\\.nuget\\packages\\itext.commons\\8.0.2\\itext.commons.8.0.2.nupkg.sha512",
     "C:\\Users\\4davi\\.nuget\\packages\\itext7\\8.0.2\\itext7.8.0.2.nupkg.sha512",

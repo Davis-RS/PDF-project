@@ -10,20 +10,34 @@ namespace PDF_project
 {
     internal class CookieManager
     {
-        // variable
+        // variables
         private DateTime timeFrame;
+        private string cookieValue;
 
-        // property
+
+        // properties
         public DateTime TimeFrame
         {
             get { return timeFrame; }
             set { timeFrame = value; }
         }
 
+        public string CookieValue
+        {
+            get { return cookieValue; }
+            set { cookieValue = value; }
+        }
 
-        public string getCookieValueFromResponse(HttpResponseMessage response, string cookieName)
+
+        public bool getCookieValueFromResponse(HttpResponseMessage response, string cookieName)
         {
             Console.WriteLine("Getting cookie value...");
+
+            // reset values
+            cookieValue = "";
+            timeFrame = new DateTime();
+
+            bool isSuccessful = false;
 
             if (response == null)
             {
@@ -34,8 +48,6 @@ namespace PDF_project
             {
                 throw new ArgumentException("Cookie name cannot be null or empty.", nameof(cookieName));
             }
-
-            string cookieValue = "";
 
             if (response.Headers.TryGetValues("Set-Cookie", out var setCookieHeaders))
             {
@@ -55,12 +67,21 @@ namespace PDF_project
                         // get timeframe of gathering the cookie
                         timeFrame = DateTime.Now;
 
+                        isSuccessful = true;
                         break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("TryGetValue from cookies failed.");
                     }
                 }
             }
+            else
+            {
+                Console.WriteLine($"Response header TryGetValue failed. response status code: {response.StatusCode}");
+            }
 
-            return cookieValue;
+            return isSuccessful;
         }
 
         public string getTokenValueFromResponse(HttpResponseMessage response, string headerName)
@@ -104,7 +125,7 @@ namespace PDF_project
             TimeSpan timeDifference = currentTime - timeFrame;
 
             // check if 5 minutes have passed
-            // bool isExpired = timeDifference.TotalSeconds >= 3;
+            //bool isExpired = timeDifference.TotalSeconds >= 10;
             bool isExpired = timeDifference.TotalMinutes >= 5;
 
             Console.WriteLine($"Validation: Current time: {currentTime} , cookie time: {timeFrame}");

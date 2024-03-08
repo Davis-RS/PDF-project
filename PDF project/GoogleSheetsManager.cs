@@ -79,6 +79,8 @@ namespace PDF_project
         // get a value from sheet
         public ValueRange getValue(string sheetId, string valueRange)
         {
+            Console.Out.WriteLine("Getting LastID value from Google sheet...");
+
             if (string.IsNullOrEmpty(sheetId))
             {
                 throw new ArgumentNullException(nameof(sheetId));
@@ -119,14 +121,14 @@ namespace PDF_project
         // add a value to sheet
         public void updateEntry(string sheetId, string sheetName, string value)
         {
-            Console.WriteLine("Updating last id cell...");
+            Console.WriteLine("Updating LastID entry...");
 
 
             if (string.IsNullOrEmpty(sheetId))
             {
                 throw new ArgumentNullException(nameof(sheetId));
             }
-            if (!string.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value))
             {
                 throw new ArgumentNullException(nameof(value));
             }
@@ -134,7 +136,7 @@ namespace PDF_project
             using (var sheetsService = new SheetsService(new BaseClientService.Initializer() { HttpClientInitializer = _credential }))
             {
                 // specify the range of cells
-                var range = $"{sheetName}!R2";
+                var range = $"{sheetName}!B1";
                 var valueRange = new ValueRange();
 
                 var objectList = new List<object>() { value };
@@ -149,7 +151,7 @@ namespace PDF_project
 
                 if (updateResponse != null)
                 {
-                    Console.WriteLine($"Last id ({value}) cell updated.");
+                    Console.WriteLine($"Last id cell updated: {value}");
                 }
             }
 
